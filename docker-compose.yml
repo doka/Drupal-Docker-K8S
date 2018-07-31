@@ -1,0 +1,59 @@
+# Drupal with MySQL
+#
+# Access via "http://d8.local"
+#
+# During initial Drupal setup:
+# - Database type: MySQL
+# - Database name: drupal8
+# - Database username: drupal8
+# - Database password: drupal8
+# - ADVANCED OPTIONS; Database host: db
+version: '3.4'
+
+# extension field to mount local persistent volummes
+# https://github.com/docker/compose/issues/4675
+x-volumes:
+  &local-volume
+  type: bind
+  source: ./files
+  target: /var/www
+
+services:
+
+  drupal:
+    # local build with ./Dockerfile, needed only if you want to modify the image
+    # build:
+    #  context: .
+    #  args:
+    #    # build-time variables:
+    #    COMPOSER_VERSION: "1.6.5"
+    #    DRUSH_VERSION:    "8.1.17"
+    image: wepoca/drupal
+    ports:
+      - 80:80
+    environment:
+      # runtime variables
+      DRUPAL_VERSION:  8.5.1     # 8.4.4 or 8.5.1 but not 8.4.x nor ~8.4 neither ^8.5.1
+      DATABASE_SERVER: database  # name of the DB service
+      MYSQL_DATABASE:  drupal8
+      MYSQL_USER:      drupal8
+      MYSQL_PASSWORD:  drupal8
+      DADMINPWD:       drupal8   # should be a secret
+    hostname: d8.local
+    volumes:
+      - <<: *local-volume
+
+  database:                      # this is also the name of the database server
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE:      drupal8
+      MYSQL_USER:          drupal8
+      MYSQL_PASSWORD:      drupal8
+    volumes:
+      - data:/var/lib/mysql
+
+volumes:
+  # using default (local) driver
+  data:
+  # files:

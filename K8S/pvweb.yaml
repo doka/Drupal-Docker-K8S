@@ -1,0 +1,40 @@
+# ------------------------------------------
+# Persistent volume claim for drupal webservice
+#
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-pvc
+  labels:
+    app: drupal
+spec:
+  # use dedicated local PV "drupal-pv"
+  storageClassName: drupalpv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+# ------------------------------------------
+# Persistent volume on localhost for Drupal file
+#
+#  !!!!  check path before create  !!!!!
+#
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: drupal-pv
+  labels:
+    type: local
+spec:
+  storageClassName: drupalpv
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    # directory location on host with absolut path, must be root
+    path: "/tmp/webroot"
+    # path: "./files"
+    type: Directory

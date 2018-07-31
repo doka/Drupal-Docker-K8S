@@ -1,0 +1,17 @@
+# ------------------------------------------
+# Persistent volume claim for the DB service
+#
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  labels:
+    app: drupal
+spec:
+  # use dedicated local PV
+  # storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi

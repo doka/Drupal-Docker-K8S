@@ -1,0 +1,73 @@
+# ------------------------------------------
+# webservice for drupal
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal
+  labels:
+    app: drupal
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: drupal
+    tier: frontend
+  type: LoadBalancer
+---
+# ------------------------------------------
+# Drupal deployment
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal
+  labels:
+    app: drupal
+spec:
+  selector:
+    matchLabels:
+      app: drupal
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: drupal
+        tier: frontend
+    spec:
+      hostname: d8
+      # subdomain: default-subdomain
+      containers:
+      - image: wepoca/drupal
+        name: drupal
+        imagePullPolicy: Never
+        env:
+        - name:  HOSTNAME
+          value: d8.local
+        - name:  DRUPAL_VERSION
+          value: 8.5.5
+        - name:  DATABASE_SERVER       ## name of the DB service
+          value: mysqldb
+        - name:  MYSQL_DATABASE
+          value: drupal8
+        - name:  MYSQL_USER
+          value: drupal8
+        - name:  MYSQL_PASSWORD   ## should be a secret, see below
+          value: drupal8
+        - name:  DADMINPWD        ## drupal admin password
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: var-www
+          mountPath: /var/www
+      volumes:
+      - name: var-www
+        persistentVolumeClaim:
+          claimName: drupal-pvc
